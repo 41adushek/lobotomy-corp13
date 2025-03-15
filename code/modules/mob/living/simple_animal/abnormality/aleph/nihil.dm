@@ -26,6 +26,7 @@
 	stat_attack = HARD_CRIT
 	work_damage_amount = 20
 	work_damage_type = WHITE_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/pride
 	attack_verb_continuous = "claws"
 	attack_verb_simple = "claw"
 	faction = list("Nihil", "hostile")
@@ -37,10 +38,12 @@
 
 	observation_prompt = "I have no plans or destination. I'm too tired to fly. <br>With no one to guide me, and no path open to me. <br>It is my fate to play the fool. <br>\
 		Before I do, I turn to face the 4 Magical Girls. <br>Are they just like me, or am I just like them?"
-	observation_choices = list("They've become me", "I came to resemble them")
-	correct_choices = list("They've become me", "I came to resemble them")
-	observation_success_message = "It doesn't matter. <br>My choices do not matter. <br>\
-		Nothing matters. <br>We will repeat this song and dance until the end of time.<br> I can only laugh at this pointless endeavor."
+	observation_choices = list(
+		"They've become me" = list(TRUE, "It doesn't matter. <br>My choices do not matter. <br>\
+			Nothing matters. <br>We will repeat this song and dance until the end of time.<br> I can only laugh at this pointless endeavor."),
+		"I came to resemble them" = list(TRUE, "It doesn't matter. <br>My choices do not matter. <br>\
+			Nothing matters. <br>We will repeat this song and dance until the end of time.<br> I can only laugh at this pointless endeavor."),
+	)
 
 	var/can_act = TRUE
 	//Teleports

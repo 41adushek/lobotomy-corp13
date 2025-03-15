@@ -25,6 +25,7 @@
 	)
 	work_damage_amount = 10
 	work_damage_type = BLACK_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/envy
 	can_patrol = FALSE
 	death_sound = 'sound/abnormalities/roadhome/House_NormalAtk.ogg'
 	ego_list = list(
@@ -44,10 +45,10 @@
 	)
 
 	observation_prompt = "Last of all, road that is lost. <br>I will send you home. <br>The wizard grants you..."
-	observation_choices = list("The home cannot be reached", "The road home")
-	correct_choices = list("The home cannot be reached")
-	observation_success_message = "What are you fighting for so fiercely when you have nowhere to go back to?"
-	observation_fail_message = "Wear this pair of shoes and be on your way. To the hometown you miss so much."
+	observation_choices = list(
+		"The home cannot be reached" = list(TRUE, "What are you fighting for so fiercely when you have nowhere to go back to?"),
+		"The road home" = list(FALSE, "Wear this pair of shoes and be on your way. To the hometown you miss so much."),
+	)
 
 	///Stuff related to the house and its path
 	var/obj/road_house/house

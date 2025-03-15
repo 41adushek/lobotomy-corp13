@@ -4,9 +4,10 @@
 	icon_state = "carnival_spear"
 	inhand_icon_state = "carnival_spear"
 	special = "Deal double damage to mobs of the backstreets."
-	force = 30
+	force = 35
 	reach = 2
-	attack_speed = 1.2
+	attack_speed = 1
+	stuntime = 5
 	damtype = BLACK_DAMAGE
 	attack_verb_continuous = list("whacks", "slashes")
 	attack_verb_simple = list("whack", "slash")
@@ -36,3 +37,8 @@
 		force *= 2
 	..()
 	force = initial_force
+
+/obj/item/ego_weapon/city/carnival_spear/weak
+	name = "Worn-down Carnival Spear"
+	force = 22
+	attribute_requirements = list()

@@ -1,64 +1,4 @@
 // All zayin pistols use the default 6 force for ego_gun pistols
-/obj/item/ego_weapon/ranged/pistol/tough
-	name = "tough pistol"
-	desc = "A glock reminiscent of a certain detective who fought evil for 25 years, losing hair as time went by."
-	special = "Use this weapon in your hand when wearing matching armor to turn others nearby bald."
-	icon_state = "bald"
-	inhand_icon_state = "bald"
-	damtype = WHITE_DAMAGE
-	projectile_path = /obj/projectile/ego_bullet/ego_tough
-	burst_size = 1
-	fire_delay = 10
-	fire_sound = 'sound/weapons/gun/pistol/shot.ogg'
-	vary_fire_sound = FALSE
-	fire_sound_volume = 70
-	var/pulse_cooldown
-	var/pulse_cooldown_time = 60 SECONDS
-	var/blast_delay = 3 SECONDS
-
-/obj/item/ego_weapon/ranged/pistol/tough/attack_self(mob/user)
-	if(!ishuman(user))
-		return
-	var/mob/living/carbon/human/H = user
-	if(pulse_cooldown > world.time)
-		to_chat(H, "<span class='warning'>You have used this ability too recently!</span>")
-		return
-	var/obj/item/clothing/suit/armor/ego_gear/zayin/tough/T = H.get_item_by_slot(ITEM_SLOT_OCLOTHING)
-	if(!istype(T))
-		to_chat(H, "<span class='warning'>You must have the corrosponding armor equipped to use this ability!</span>")
-		return
-	to_chat(H, "<span class='warning'>You use the [src] to create a field of baldness!</span>")
-	H.playsound_local(get_turf(H), 'sound/abnormalities/wrath_servant/hermit_magic.ogg', 25, 0)
-	BaldBlast(user)
-	pulse_cooldown = world.time + pulse_cooldown_time
-
-/obj/item/ego_weapon/ranged/pistol/tough/proc/BaldBlast(mob/living/carbon/human/user ,list/baldtargets = list(), burst_chain)
-	for(var/mob/living/carbon/human/L in livinginview(5, user)) //not even the dead are safe.
-		if(!ishuman(L))
-			continue
-		if(HAS_TRAIT(L, TRAIT_BALD))
-			continue
-		if(L in baldtargets)
-			to_chat(L, "<span class='warning'>You feel awesome!</span>")
-			ADD_TRAIT(L, TRAIT_BALD, "ABNORMALITY_BALD")
-			L.hairstyle = "Bald"
-			L.update_hair()
-			continue
-
-		baldtargets += L
-		to_chat(L, "<span class='warning'>You have been hit by the baldy-bald psychological attack. If a non-bald person is reading this, they will be granted the privilege of going bald at an extremely rapid pace if they stay within range of [user]!</span>")
-	if(!burst_chain)
-		addtimer(CALLBACK(src, PROC_REF(BaldBlast), user, baldtargets, TRUE), blast_delay)
-
-/obj/item/ego_weapon/ranged/pistol/tough/SpecialEgoCheck(mob/living/carbon/human/H)
-	if(HAS_TRAIT(H, TRAIT_BALD))
-		return TRUE
-	to_chat(H, "<span class='notice'>Only the ones with dedication to clean hairstyle can use [src]!</span>")
-	return FALSE
-
-/obj/item/ego_weapon/ranged/pistol/tough/SpecialGearRequirements()
-	return "\n<span class='warning'>The user must have clean hairstyle.</span>"
-
 /obj/item/ego_weapon/ranged/pistol/soda
 	name = "soda pistol"
 	desc = "A pistol painted in a refreshing purple. Whenever this EGO is used, a faint scent of grapes wafts through the air."
@@ -75,38 +15,31 @@
 	fire_sound_volume = 70
 	var/shrimp_chosen
 
-/obj/item/ego_weapon/ranged/pistol/soda/equipped(mob/living/carbon/human/user, slot)
+/obj/item/ego_weapon/ranged/pistol/soda/pickup(mob/user)
 	. = ..()
-	if(!user)
-		return
 	shrimp_chosen = user
 	RegisterSignal(shrimp_chosen, COMSIG_LIVING_DEATH, PROC_REF(ShrimpFuneral))
 
 /obj/item/ego_weapon/ranged/pistol/soda/dropped(mob/user)
 	. = ..()
-	if(!user)
-		return
 	UnregisterSignal(shrimp_chosen, COMSIG_LIVING_DEATH)
 	shrimp_chosen = null
 
 /obj/item/ego_weapon/ranged/pistol/soda/Destroy(mob/user)
-	if(!user)
-		return ..()
-	UnregisterSignal(shrimp_chosen, COMSIG_LIVING_DEATH)
+	if(shrimp_chosen)
+		UnregisterSignal(shrimp_chosen, COMSIG_LIVING_DEATH)
 	shrimp_chosen = null
 	return ..()
 
 /obj/item/ego_weapon/ranged/pistol/soda/proc/ShrimpFuneral(mob/user)
 	var/obj/item/clothing/suit/armor/ego_gear/zayin/soda/S = user.get_item_by_slot(ITEM_SLOT_OCLOTHING)
 	if(istype(S))
-		var/shrimpcount
-		while(shrimpcount < 2)
-			new /mob/living/simple_animal/hostile/shrimp/friendly(get_turf(user))
-			shrimpcount += 1
-	user.playsound_local(get_turf(user), 'sound/abnormalities/wellcheers/shrimptaps.ogg', 50, 0)
+		user.playsound_local(get_turf(user), 'sound/abnormalities/wellcheers/shrimptaps.ogg', 50, 0)
+		for(var/i in 1 to 2)
+			new /mob/living/simple_animal/hostile/shrimp/grieving(get_turf(user))
 
 //friendly spawned shrimp
-/mob/living/simple_animal/hostile/shrimp/friendly
+/mob/living/simple_animal/hostile/shrimp/grieving
 	name = "wellcheers obituary serviceman"
 	desc = "A shrimp that appears to be grieving. A moment of silence, please."
 	icon_state = "wellcheers_funeral"

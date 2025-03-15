@@ -4,6 +4,7 @@
 	icon = 'ModularTegustation/Teguicons/48x64.dmi'
 	icon_state = "judgement_bird"
 	icon_living = "judgement_bird"
+	icon_dead = "judgement_bird_dead"
 	core_icon = "jbird_egg"
 	portrait = "judgement_bird"
 	faction = list("hostile", "Apocalypse")
@@ -11,6 +12,7 @@
 
 	pixel_x = -8
 	base_pixel_x = -8
+	del_on_death = FALSE
 
 	ranged = TRUE
 	minimum_distance = 6
@@ -33,6 +35,7 @@
 	)
 	work_damage_amount = 10
 	work_damage_type = PALE_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/wrath
 
 	attack_action_types = list(/datum/action/innate/abnormality_attack/judgement)
 
@@ -50,11 +53,11 @@
 
 	observation_prompt = "\"Long Bird\" who lived in the forest didn't want to let creatures to be eaten by monsters. <br>\
 		His initial goal was pure, at least. <br>The forest began to be saturated by darkness. <br>His long vigil is saturated with memories and regrets."
-	observation_choices = list("Leave him be", "Console the bird")
-	correct_choices = list("Console the bird")
-	observation_success_message = "Long Bird put down his scales, that had been with him for a long time. <br>\
-		The long-lasting judgement finally ends. <br>Long Bird slowly realizes the secrets behind the monster, and he waits. <br>For the forest that he will never take back."
-	observation_fail_message = "Long Bird sees through you, even though he is blind. <br>He is weighing your sins."
+	observation_choices = list(
+		"Console the bird" = list(TRUE, "Long Bird put down his scales, that had been with him for a long time. <br>\
+			The long-lasting judgement finally ends. <br>Long Bird slowly realizes the secrets behind the monster, and he waits. <br>For the forest that he will never take back."),
+		"Leave him be" = list(FALSE, "Long Bird sees through you, even though he is blind. <br>He is weighing your sins."),
+	)
 
 	var/judgement_cooldown = 10 SECONDS
 	var/judgement_cooldown_base = 10 SECONDS
@@ -76,6 +79,8 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/abnormality/judgement_bird/AttackingTarget(atom/attacked_target)
+	if(!target)
+		GiveTarget(attacked_target)
 	return OpenFire()
 
 /mob/living/simple_animal/hostile/abnormality/judgement_bird/OpenFire()
@@ -154,6 +159,8 @@
 /mob/living/simple_animal/hostile/abnormality/judgement_bird/death(gibbed)
 	for(var/mob/living/V in birdlist)
 		V.death()
+	animate(src, alpha = 0, time = 10 SECONDS)
+	QDEL_IN(src, 10 SECONDS)
 	..()
 
 //Runaway birds - Mini Simple Smile, 2 spawned after Jbird kills a player, and 2 on spawn.
@@ -188,12 +195,14 @@
 	visible_message(span_danger("<b>[src]</b> taunts [A]!"))
 	ranged_cooldown = world.time + ranged_cooldown_time
 
-/mob/living/simple_animal/hostile/runawaybird/AttackingTarget()
+/mob/living/simple_animal/hostile/runawaybird/AttackingTarget(atom/attacked_target)
 	. = ..()
-	if(ishuman(target))
-		var/mob/living/carbon/human/L = target
+	if(ishuman(attacked_target))
+		var/mob/living/carbon/human/L = attacked_target
 		L.Knockdown(20)
 		var/obj/item/held = L.get_active_held_item()
+		if(SSmaptype.maptype == "office")
+			return
 		L.dropItemToGround(held) //Drop weapon
 
 /mob/living/simple_animal/hostile/runawaybird/patrol_select()

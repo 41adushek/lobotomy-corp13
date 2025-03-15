@@ -39,6 +39,7 @@
 	start_qliphoth = 3
 	work_damage_amount = 16
 	work_damage_type = list(RED_DAMAGE, WHITE_DAMAGE, BLACK_DAMAGE, PALE_DAMAGE)
+	chem_type = /datum/reagent/abnormality/sin/lust
 
 	ego_list = list(
 		/datum/ego_datum/armor/distortion,
@@ -51,21 +52,21 @@
 		But the largest creature of all surrounds me entirely. <br>Every direction is covered in a undulating mass of flesh, blood, fur, and feathers. <br>\
 		I am always butchering monsters like these. <br>I tear them limb from limb.<br>\
 		Bringing death in brutal fashion. <br>Am I not a fitting piece of the scenery before me?"
-	observation_choices = list("I am a monster", "I am not a monster")
-	correct_choices = list("I am not a monster")
-	observation_success_message = "It is hard to live in the city. <br>\
-		To pretend to be a civilized human when living in this manner. <br>\
-		It is easy to give into the temptation of giving up all pretenses of humanity. <br>\
-		But I do it because it is hard. <br>\
-		... <br>\
-		I am not a monster. <br>\
-		I will never become a monster."
-	observation_fail_message = "\"Do you wish to be so?\" <br>\
-		\"Then it can be as you wish.\" <br>\
-		... <br>\
-		Her voice is like sunshine. <br>\
-		... <br>\
-		I am a monster. <br>"
+	observation_choices = list(
+		"I am not a monster" = list(TRUE, "It is hard to live in the city. <br>\
+			To pretend to be a civilized human when living in this manner. <br>\
+			It is easy to give into the temptation of giving up all pretenses of humanity. <br>\
+			But I do it because it is hard. <br>\
+			... <br>\
+			I am not a monster. <br>\
+			I will never become a monster."),
+		"I am a monster" = list(FALSE, "\"Do you wish to be so?\" <br>\
+			\"Then it can be as you wish.\" <br>\
+			... <br>\
+			Her voice is like sunshine. <br>\
+			... <br>\
+			I am a monster. <br>"),
+	)
 
 //Work vars
 	var/transform_timer
@@ -300,6 +301,9 @@
 
 //Breach
 /mob/living/simple_animal/hostile/abnormality/distortedform/BreachEffect(mob/living/carbon/human/user, breach_type)
+	if(breach_type == BREACH_MINING)
+		qdel(src)
+		return
 	. = ..()
 	if(breached)
 		return
@@ -346,7 +350,8 @@
 	for(var/mob/living/carbon/human/survivor in survivors)
 		if(survivor.stat == DEAD || !survivor.ckey)
 			continue
-		if(src.z == 6) //Test Range Z Level
+		var/area_check = get_area(src)
+		if(istype(area_check, /area/test_range))
 			return ..()
 		survivor.Apply_Gift(new /datum/ego_gifts/fervor)
 		survivor.playsound_local(get_turf(survivor), 'sound/weapons/black_silence/snap.ogg', 50)
@@ -397,15 +402,10 @@
 		return
 	var/punishment = TRUE
 	var/transform_target
-	for(var/mob/living/L in urange(15, src))
-		if(L.z != z)
-			continue
-		if(faction_check_mob(L))
-			continue
-		if((L.stat == DEAD) || (L.status_flags & GODMODE))
-			continue
-		punishment = FALSE
-		break
+	for(var/mob/living/L in ohearers(15, src))
+		if(CanAttack(L))
+			punishment = FALSE
+			break
 	if(punishment && !jump_ready) //No one is within 15 tiles? Let's just snipe players instead!
 		transform_target = pick(transform_list_longrange)
 		jump_ready = TRUE
@@ -420,7 +420,7 @@
 	transform_count += 1
 
 //Attacks
-/mob/living/simple_animal/hostile/abnormality/distortedform/CanAttack(atom/the_target)
+/mob/living/simple_animal/hostile/abnormality/distortedform/AttackingTarget(atom/attacked_target)
 	if(!can_attack || !can_act)
 		return FALSE
 	return ..()
@@ -546,7 +546,9 @@
 	playsound(src, "sound/abnormalities/distortedform/screech4.ogg", 75, FALSE, 8)
 	for(var/i = 1 to 8)
 		new /obj/effect/temp_visual/fragment_song(get_turf(src))
-		for(var/mob/living/L in view(8, src))
+		for(var/mob/living/L in ohearers(8, src))
+			if(L.z != z || (L.status_flags & GODMODE))
+				continue
 			if(faction_check_mob(L, FALSE))
 				continue
 			if(L.stat == DEAD)
@@ -559,19 +561,14 @@
 	var/list/target_list = list()
 	var/list/human_targets = list()
 	for(var/mob/living/L in urange(10, src))
-		if(L.z != z || (L.status_flags & GODMODE))
-			continue
-		if(faction_check_mob(L, FALSE))
-			continue
-		if(L.stat >= DEAD)
-			continue
-		target_list += L
-		if(ishuman(L))
-			human_targets += L
+		if(CanAttack(L))
+			target_list += L
+			if(ishuman(L))
+				human_targets += L
 
-	if(!target)
+	if(QDELETED(target))
 		if(LAZYLEN(target_list))
-			target = pick(target_list)
+			GiveTarget(pick(target_list))
 // We're checking for a lot of things here. Basically, this is a check to determine whether or not we use a mechanic that requires teamwork and/or coordination to solve.
 	if(!target || !ishuman(target) || QDELETED(target) || (human_targets.len < 2) || prob(50))
 		if(prob(50))
@@ -1238,13 +1235,13 @@
 /mob/living/simple_animal/hostile/abnormality/distortedform/proc/ToadJump(mob/living/target)
 	special_attack_cooldown = world.time + 6 SECONDS
 	can_act = FALSE
-	animate(src, alpha = 1,pixel_x = 0, pixel_z = 16, time = 0.1 SECONDS)
+	animate(src, alpha = 1, pixel_z = 16, time = 0.1 SECONDS)
 	src.pixel_z = 16
 	playsound(src, 'sound/abnormalities/blubbering_toad/windup.ogg', 50, FALSE, 4)
 	var/turf/target_turf = get_turf(target)
 	SLEEP_CHECK_DEATH(0.5 SECONDS)
 	forceMove(target_turf) //look out, someone is rushing you!
-	animate(src, alpha = 255,pixel_x = 0, pixel_z = -16, time = 0.1 SECONDS)
+	animate(src, alpha = 255, pixel_z = -16, time = 0.1 SECONDS)
 	src.pixel_z = 0
 	for(var/turf/T in view(1, src))
 		var/obj/effect/temp_visual/small_smoke/halfsecond/FX =  new(T)

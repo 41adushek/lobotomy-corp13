@@ -19,6 +19,7 @@
 	max_boxes = 20
 	work_damage_amount = 0		//Work damage is later
 	work_damage_type = RED_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/lust
 
 	ego_list = list(
 		/datum/ego_datum/weapon/heart,
@@ -30,10 +31,10 @@
 	observation_prompt = "I've been praying for 7 days and 7 nights, my skin is taut from malnutrition, my eyes bloodshot from lack of sleep and my clothes soiled with my own filth. <br>\
 		Though my throat is so dry I cannot even maintain the chants I move my lips anyway. <br>\
 		Is anyone even listening? <br>Does my prayer reach Him? <br>All I ask for is a sign."
-	observation_choices = list("Stop praying", "Keep praying")
-	correct_choices = list("Stop praying")
-	observation_success_message = "No one is there, God does not reside here."
-	observation_fail_message = "If God truly loves us, he'll show us a sign."
+	observation_choices = list(
+		"Stop praying" = list(TRUE, "No one is there, God does not reside here."),
+		"Keep praying" = list(FALSE, "If God truly loves us, he'll show us a sign."),
+	)
 
 	var/work_count = 0
 	var/breach_count = 4	//when do you breach?

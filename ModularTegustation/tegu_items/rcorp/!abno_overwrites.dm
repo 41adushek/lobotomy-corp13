@@ -52,7 +52,9 @@
 //Porccubus gets a much shorter dash cooldown to better maneuver itself with how big of a commitment dashing is.
 /mob/living/simple_animal/hostile/abnormality/porccubus/Initialize()
 	if(IsCombatMap())
-		ranged_cooldown_time = 3 SECONDS
+		maxHealth = 3000
+		health = 3000
+		ranged_cooldown_time = 0.5 SECONDS
 	return ..()
 
 // Fairy gentleman gets a bump to his survival, damage, and a bigger ass.
@@ -73,4 +75,50 @@
 /mob/living/simple_animal/hostile/abnormality/der_freischutz/Initialize()
 	if(SSmaptype.maptype == "rcorp")
 		bullet_damage = 200
+	return ..()
+
+//Due to Redblooded's very low damage and health, which is normaly fitting for a Teth. That causes them to underperform in R-Corp since they don't have any utility.
+//For that reason his health is increased and let his ammo gimmick work by reducing his ranged cooldown.
+/mob/living/simple_animal/hostile/abnormality/redblooded/Initialize()
+	if(SSmaptype.maptype == "rcorp")
+		ranged_cooldown_time = 0.5 SECONDS
+		maxHealth = 1200
+		health = 1200
+		melee_damage_lower = 15
+		melee_damage_upper = 20
+		casingtype = /obj/item/ammo_casing/caseless/rcorp_true_patriot
+	return ..()
+
+/mob/living/simple_animal/hostile/abnormality/ppodae/Initialize()
+	if(IsCombatMap())
+		smash_damage_low = 32
+		smash_damage_high = 40
+	return ..()
+
+//Warden deals even less damage then more bodies they eat, and they take more damage from all attacks.
+//Warden currently slowballs far to quickly, so this nerf should give R-Corp a better chance at fighting back against them.
+/mob/living/simple_animal/hostile/abnormality/warden/Initialize()
+	if(IsCombatMap())
+		damage_down = 10
+	return ..()
+
+//Censored no longer applies his statues effect passivly, Now he needs to hit his ranged attack to apply it.
+//For that reason, I am reducing the cooldown for that ranged attack and lowering it's damage by around 50%, so they can at least try to apply it more often.
+/mob/living/simple_animal/hostile/abnormality/censored/Initialize()
+	if(SSmaptype.maptype == "rcorp")
+		ability_damage = 120
+		ability_cooldown_time = 6 SECONDS
+	return ..()
+
+//Nothing There passive healing will only start when they are under 50% health. But, I am increasing that healing by 50%.
+/mob/living/simple_animal/hostile/abnormality/nothing_there/Initialize()
+	if(SSmaptype.maptype == "rcorp")
+		heal_percent_per_second = 0.01275
+		r_corp_regen_start = 0.5
+	return ..()
+
+/mob/living/simple_animal/hostile/abnormality/greed_king/Initialize()
+	if(IsCombatMap())
+		initial_charge_damage = 200
+		growing_charge_damage = 80
 	return ..()

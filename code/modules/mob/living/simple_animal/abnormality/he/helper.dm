@@ -1,12 +1,20 @@
 /mob/living/simple_animal/hostile/abnormality/helper
 	name = "All-Around Helper"
 	desc = "A tiny robot with helpful intentions."
-	icon = 'ModularTegustation/Teguicons/tegumobs.dmi'
+	icon = 'ModularTegustation/Teguicons/64x64.dmi'
 	icon_state = "helper"
 	icon_living = "helper"
 	portrait = "helper"
+	icon_dead = "helper_dead"
+	pixel_x = -16
+	base_pixel_x = -16
+	pixel_y = -16
+	base_pixel_y = -16
+	del_on_death = FALSE
+	death_message = "falls to the ground, deactivating."
 	maxHealth = 1000
 	health = 1000
+	blood_volume = 0
 	rapid_melee = 4
 	ranged = TRUE
 	attack_verb_continuous = "slashes"
@@ -30,12 +38,14 @@
 	)
 	work_damage_amount = 10
 	work_damage_type = RED_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/wrath
 
 	ego_list = list(
 		/datum/ego_datum/weapon/grinder,
 		/datum/ego_datum/armor/grinder,
 	)
 	gift_type =  /datum/ego_gifts/grinder
+	secret_gift = /datum/ego_gifts/reddit
 	gift_message = "Contamination scan complete. Initiating cleaning protocol."
 	abnormality_origin = ABNORMALITY_ORIGIN_LOBOTOMY
 
@@ -45,11 +55,11 @@
 	)
 
 	observation_prompt = "Is fun to clean. I was..."
-	observation_choices = list("You are special")
-	correct_choices = list("You are special")
-	observation_success_message = "There were many friends who looked like me. <br>I was special. <br>\
-		My creator always said to me. <br>\"You have to be sent to her. You are special. <br>You can give them a very special present.\" <br>\
-		Numbers of tools, which were devoid of for my friends, were put into me. <br>When I was sent to a new home, I gave them a present."
+	observation_choices = list(
+		"You are special" = list(TRUE, "There were many friends who looked like me. <br>I was special. <br>\
+			My creator always said to me. <br>\"You have to be sent to her. You are special. <br>You can give them a very special present.\" <br>\
+			Numbers of tools, which were devoid of for my friends, were put into me. <br>When I was sent to a new home, I gave them a present."),
+	)
 
 	var/charging = FALSE
 	var/dash_num = 50
@@ -60,6 +70,13 @@
 
 	//PLAYABLES ATTACKS
 	attack_action_types = list(/datum/action/innate/abnormality_attack/toggle/helper_dash_toggle)
+
+	//Secret Sprite
+	secret_chance = TRUE
+	secret_icon_living = "reddit"
+	secret_icon_state = "reddit"
+	secret_vertical_offset = 0
+	secret_icon_dead = "reddit_dead"
 
 /datum/action/innate/abnormality_attack/toggle/helper_dash_toggle
 	name = "Toggle Dash"
@@ -72,11 +89,11 @@
 	button_icon_toggle_deactivated = "helper_toggle0"
 
 
-/mob/living/simple_animal/hostile/abnormality/helper/AttackingTarget()
+/mob/living/simple_animal/hostile/abnormality/helper/AttackingTarget(atom/attacked_target)
 	if(charging)
 		return
 	if(dash_cooldown <= world.time && prob(10) && !client)
-		helper_dash(target)
+		helper_dash(attacked_target)
 		return
 	return ..()
 
@@ -102,17 +119,27 @@
 
 /mob/living/simple_animal/hostile/abnormality/helper/update_icon_state()
 	if(status_flags & GODMODE)
-		icon = initial(icon)
-		pixel_x = initial(pixel_x)
-		base_pixel_x = initial(base_pixel_x)
-		pixel_y = initial(pixel_y)
-		base_pixel_y = initial(base_pixel_y)
+		if(secret_abnormality)
+			icon_living = secret_icon_living
+			icon_state = secret_icon_state
+			base_pixel_y = 0
+		else
+			icon_living = initial(icon_state)
+			icon_state = initial(icon_state)
+
 	else
-		icon = 'ModularTegustation/Teguicons/64x64.dmi'
-		pixel_x = -16
-		base_pixel_x = -16
-		pixel_y = -16
-		base_pixel_y = -16
+		if(secret_abnormality)
+			icon_living = "reddit_breach"
+			icon_state = icon_living
+			base_pixel_y = -16
+		else
+			icon_living = "helper_breach"
+			icon_state = icon_living
+
+/mob/living/simple_animal/hostile/abnormality/helper/death(gibbed)
+	animate(src, alpha = 0, time = 10 SECONDS)
+	QDEL_IN(src, 10 SECONDS)
+	..()
 
 /mob/living/simple_animal/hostile/abnormality/helper/proc/helper_dash(target)
 	if(charging || dash_cooldown > world.time)

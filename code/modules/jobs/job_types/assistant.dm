@@ -10,12 +10,14 @@ GLOBAL_LIST_EMPTY(spawned_clerks)
 	spawn_positions = 0
 	supervisors = "absolutely everyone"
 	selection_color = "#dddddd"
-	access = list(ACCESS_ROBOTICS)			//See /datum/job/assistant/get_access()
-	minimal_access = list(ACCESS_ROBOTICS)	//See /datum/job/assistant/get_access()
-	// Let their be bot maintenance!
+
 	outfit = /datum/outfit/job/assistant
-	antag_rep = 7 //persistant currency but currently unusable
+	antag_rep = 7 // Persistant currency but currently unusable
 	display_order = JOB_DISPLAY_ORDER_CLERK
+
+	access = list(ACCESS_ROBOTICS) // Let their be bot maintenance!
+	minimal_access = list(ACCESS_ROBOTICS)
+	departments = DEPARTMENT_SERVICE
 
 	liver_traits = list(TRAIT_GREYTIDE_METABOLISM)
 
@@ -40,14 +42,22 @@ GLOBAL_LIST_EMPTY(spawned_clerks)
 //Cannot Gain stats.
 /datum/job/assistant/after_spawn(mob/living/carbon/human/outfit_owner, mob/M, latejoin = FALSE)
 	. = ..()
-	outfit_owner.adjust_attribute_buff(TEMPERANCE_ATTRIBUTE, 10)
-	outfit_owner.adjust_attribute_buff(PRUDENCE_ATTRIBUTE, 10)
-	ADD_TRAIT(outfit_owner, TRAIT_WORK_FORBIDDEN, JOB_TRAIT)
+	if(SSmaptype.chosen_trait != FACILITY_TRAIT_WORKING_CLERKS)
+		outfit_owner.adjust_attribute_buff(TEMPERANCE_ATTRIBUTE, 10)
+		outfit_owner.adjust_attribute_buff(PRUDENCE_ATTRIBUTE, 10)
+		ADD_TRAIT(outfit_owner, TRAIT_WORK_FORBIDDEN, JOB_TRAIT)
+
+	else	//Don't buff them if they can work jesus
+		outfit_owner.set_attribute_limit(130)
 
 	for(var/upgradecheck in GLOB.lcorp_upgrades)
 		if(upgradecheck == "Clerk Buff")
 			outfit_owner.set_attribute_limit(40)
 			outfit_owner.adjust_all_attribute_levels(40)
+
+	if(SSmaptype.chosen_trait == FACILITY_TRAIT_ABNO_BLITZ)
+		outfit_owner.set_attribute_limit(40)
+		outfit_owner.adjust_all_attribute_levels(40)
 
 	if(outfit_owner.ckey in GLOB.spawned_clerks)
 		return

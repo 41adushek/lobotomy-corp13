@@ -22,6 +22,7 @@
 	work_damage_amount = 6
 	work_damage_type = RED_DAMAGE
 	max_boxes = 8
+	chem_type = /datum/reagent/abnormality/sin/lust
 
 	ego_list = list(
 		/datum/ego_datum/weapon/evening,
@@ -30,14 +31,13 @@
 	gift_type = /datum/ego_gifts/evening
 	abnormality_origin = ABNORMALITY_ORIGIN_ARTBOOK // Technically it was in the beta but I dont want it showing it up in LC-only modes
 
-	observation_prompt = "I was the unluckiest man in the world. <br>\
-		Everything around me did nothing but ruining my life.But I had no power to change this fate. <br>\
-		Someday, someone made an offer to me.\"If you accept it, your whole world will change.\" <br>\
+	observation_prompt = "I was the unluckiest man in the world.<br>\
+		Everything around me did nothing but ruining my life. But I had no power to change this fate.<br>\
+		Someday, someone made an offer to me. \"If you accept it, your whole world will change.\"<br>\
 		Such a tempting offer. I would become something that I could only hope to be."
-	observation_choices = list("Accept the offer")
-	correct_choices = list("Accept the offer")
-	observation_success_message = "I accepted the offer and paid the price. <br>\
-		The $0 Hammer of Light shined."
+	observation_choices = list(
+		"Accept the offer" = list(TRUE, "I accepted the offer and paid the price. <br>The $0 Hammer of Light shined.")
+	)
 
 	pet_bonus = "hums" // saves a few lines of code by allowing funpet() to be called by attack_hand()
 	var/sealed = TRUE
@@ -251,6 +251,7 @@
 	attack_verb_continuous = list("slams", "strikes", "smashes")
 	attack_verb_simple = list("slam", "strike", "smash")
 	hitsound = 'sound/abnormalities/lighthammer/hammer_filter.ogg'
+	slot_flags = null
 	var/list/spawned_mobs = list()
 	var/spawned_mob_max = 4
 	var/spawn_cooldown = 0

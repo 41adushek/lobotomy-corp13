@@ -43,6 +43,7 @@
 	)
 	work_damage_amount = 10
 	work_damage_type = WHITE_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/wrath
 
 	ego_list = list(
 		/datum/ego_datum/weapon/warring,
@@ -56,12 +57,12 @@
 	observation_prompt = "The totem sits atop a pile of gore and viscera. <br>\
 		Human scalps dangle motionlessly, strung to its wings. <br>\
 		Though the totem lies still, you feel compelled to answer it."
-	observation_choices = list("Speak", "Remain silent")
-	correct_choices = list("Remain silent")
-	observation_success_message = "The disgusting totem answered with silence. <br>\
-		The Thunderbird had been defeated long ago, its existence being its only privilege."
-	observation_fail_message = "Before you can utter a word, thunder booms within the cell. <br>\
-		The Thunderbird can be spoken to, but never reasoned with."
+	observation_choices = list(
+		"Remain silent" = list(TRUE, "The disgusting totem answered with silence. <br>\
+			The Thunderbird had been defeated long ago, its existence being its only privilege."),
+		"Speak" = list(FALSE, "Before you can utter a word, thunder booms within the cell. <br>\
+			The Thunderbird can be spoken to, but never reasoned with."),
+	)
 
 /*---Combat---*/
 	//Melee stats
@@ -101,11 +102,11 @@
 	new /obj/structure/tbird_perch(get_turf(src))
 
 //attempts to charge its target regardless of distance with a short cooldown. Can be spammed if distant enough.
-/mob/living/simple_animal/hostile/abnormality/thunder_bird/AttackingTarget()
+/mob/living/simple_animal/hostile/abnormality/thunder_bird/AttackingTarget(atom/attacked_target)
 	if(charging)
 		return
 	if(dash_cooldown <= world.time && prob(10) && !client)
-		thunder_bird_dash(target)
+		thunder_bird_dash(attacked_target)
 		return
 	return ..()
 
@@ -369,13 +370,13 @@
 	var/mob/living/simple_animal/hostile/abnormality/thunder_bird/master
 
 //Zombie conversion from zombie kills
-/mob/living/simple_animal/hostile/thunder_zombie/AttackingTarget()
+/mob/living/simple_animal/hostile/thunder_zombie/AttackingTarget(atom/attacked_target)
 	. = ..()
 	if(!can_act)
 		return
-	if(!ishuman(target))
+	if(!ishuman(attacked_target))
 		return
-	var/mob/living/carbon/human/H = target
+	var/mob/living/carbon/human/H = attacked_target
 	if(H.stat >= SOFT_CRIT || H.health < 0)
 		Convert(H)
 

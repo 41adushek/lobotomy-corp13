@@ -25,6 +25,7 @@
 	melee_damage_lower = 5
 	melee_damage_upper = 15 // Idea taken from the old PR, have a large damage range to immitate its fucked rolls and crit chance.
 	melee_damage_type = BLACK_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/gluttony
 	stat_attack = HARD_CRIT
 	attack_sound = 'sound/abnormalities/drifting_fox/fox_melee_sound.ogg'
 	attack_verb_simple = "thwacks"
@@ -55,20 +56,20 @@
 		The umbrellas jiggled. <br.\
 		Looking closer, there’s a large fox underneath. <br.\
 		The umbrellas’ rusted iron blades have firmly rooted themselves in its back."
-	observation_choices = list("Pet the fox", "Pull out the umbrellas")
-	correct_choices = list("Pet the fox")
-	observation_success_message = "Its growl recedes. <br.\
-		You stroke it once more, <br.\
-		and it closes its eyes, pleased. <br.\
-		You stroke it once more, <br.\
-		and it settles on the ground, comforted. <br.\
-		You stroke it once more, <br.\
-		and it shrinks to become a statue."
-	observation_fail_message = "Those umbrellas seem to be causing it pain. <br.\
-		When you pull them out with force, bits of its flesh come off with them. <br.\
-		The fox yelped sharply and gave us a glare. <br.\
-		Then, it smacked you with the umbrella in its mouth. <br.\
-		It seemed to reprimand your attitude of pursuing resolution without forethought."
+	observation_choices = list(
+		"Pet the fox" = list(TRUE, "Its growl recedes. <br.\
+			You stroke it once more, <br.\
+			and it closes its eyes, pleased. <br.\
+			You stroke it once more, <br.\
+			and it settles on the ground, comforted. <br.\
+			You stroke it once more, <br.\
+			and it shrinks to become a statue."),
+		"Pull out the umbrellas" = list(FALSE, "Those umbrellas seem to be causing it pain. <br.\
+			When you pull them out with force, bits of its flesh come off with them. <br.\
+			The fox yelped sharply and gave us a glare. <br.\
+			Then, it smacked you with the umbrella in its mouth. <br.\
+			It seemed to reprimand your attitude of pursuing resolution without forethought."),
+	)
 
 	var/list/pet = list()
 	pet_bonus = "yips"
@@ -225,6 +226,8 @@
 	return FALSE
 
 /mob/living/simple_animal/hostile/umbrella/AttackingTarget(atom/attacked_target)
+	if(!target)
+		GiveTarget(attacked_target)
 	OpenFire()
 	return
 

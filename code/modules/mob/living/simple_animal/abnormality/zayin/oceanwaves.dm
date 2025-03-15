@@ -19,6 +19,7 @@
 	max_boxes = 10
 	success_boxes = 9
 	neutral_boxes = 6
+	chem_type = /datum/reagent/abnormality/sin/gloom
 
 	ego_list = list(
 		/datum/ego_datum/weapon/oceanic,
@@ -43,11 +44,11 @@
 		Where does it get its power…? <br>Besides that, what’s with this sound of crashing waves? <br>\
 		Regardless, this vacant lot looks to be a good place to take a break. <br>\
 		Standing in front of the vending machine, you see rows of buttons."
-	observation_choices = list("Press one")
-	correct_choices = list("Press one")
-	observation_success_message = "With just a single press, the machine ejected one can after another. <br>\
-		All the cans are purple. You can’t fathom the meaning of the ships and grapes doodled on them, but they somehow feel familiar, and well… cheery. <br>\
-		They should be okay to drink."
+	observation_choices = list(
+		"Press one" = list(TRUE, "With just a single press, the machine ejected one can after another. <br>\
+			All the cans are purple. You can’t fathom the meaning of the ships and grapes doodled on them, but they somehow feel familiar, and well… cheery. <br>\
+			They should be okay to drink."),
+	)
 
 	var/list/goodsoders = list(
 		/obj/item/reagent_containers/food/drinks/soda_cans/oceanwave/unlabeled,

@@ -38,10 +38,10 @@
 	. = ..()
 	a_intent_change(INTENT_HELP)
 
-/mob/living/simple_animal/hostile/ordeal/indigo_noon/AttackingTarget()
+/mob/living/simple_animal/hostile/ordeal/indigo_noon/AttackingTarget(atom/attacked_target)
 	. = ..()
-	if(. && isliving(target))
-		var/mob/living/L = target
+	if(. && isliving(attacked_target))
+		var/mob/living/L = attacked_target
 		if(L.stat != DEAD)
 			if(L.health <= HEALTH_THRESHOLD_DEAD && HAS_TRAIT(L, TRAIT_NODEATH))
 				devour(L)
@@ -65,9 +65,8 @@
 
 /mob/living/simple_animal/hostile/ordeal/indigo_noon/PickTarget(list/Targets)
 	if(health <= maxHealth * 0.6) // If we're damaged enough
-		for(var/mob/living/simple_animal/hostile/ordeal/indigo_noon/sweeper in view(7, src)) // And there is no sweepers even more damaged than us
+		for(var/mob/living/simple_animal/hostile/ordeal/indigo_noon/sweeper in ohearers(7, src)) // And there is no sweepers even more damaged than us
 			if(sweeper.stat != DEAD && (health > sweeper.health))
-				sweeper.PickTarget(Targets) // Let this sweeper see the same targets as we do
 				return ..()
 		var/list/highest_priority = list()
 		for(var/mob/living/L in Targets)
@@ -196,10 +195,10 @@
 	. = ..()
 	a_intent_change(INTENT_HELP) //so that they dont get body blocked by their kin outside of combat
 
-/mob/living/simple_animal/hostile/ordeal/indigo_dusk/AttackingTarget()
+/mob/living/simple_animal/hostile/ordeal/indigo_dusk/AttackingTarget(atom/attacked_target)
 	. = ..()
-	if(. && isliving(target))
-		var/mob/living/L = target
+	if(. && isliving(attacked_target))
+		var/mob/living/L = attacked_target
 		if(L.stat != DEAD)
 			if(L.health <= HEALTH_THRESHOLD_DEAD && HAS_TRAIT(L, TRAIT_NODEATH))
 				devour(L)
@@ -361,10 +360,10 @@
 	patrol_reset()
 	return FALSE
 
-/mob/living/simple_animal/hostile/ordeal/indigo_midnight/AttackingTarget()
+/mob/living/simple_animal/hostile/ordeal/indigo_midnight/AttackingTarget(atom/attacked_target)
 	. = ..()
-	if(. && isliving(target))
-		var/mob/living/L = target
+	if(. && isliving(attacked_target))
+		var/mob/living/L = attacked_target
 		if(L.stat != DEAD)
 			if(L.health <= HEALTH_THRESHOLD_DEAD && HAS_TRAIT(L, TRAIT_NODEATH))
 				devour(L)

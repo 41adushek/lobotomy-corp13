@@ -33,7 +33,7 @@
 	desc = "The last legacy of the man who sought wisdom. The rake tilled the human brain instead of farmland."
 	special = "Use this weapon in your hand to damage every non-human within reach."
 	icon_state = "harvest"
-	force = 25
+	force = 28		//It does have an ability, and therefore needs less damage
 	damtype = BLACK_DAMAGE
 	swingstyle = WEAPONSWING_LARGESWEEP
 	attack_verb_continuous = list("attacks", "bashes", "tills")
@@ -42,6 +42,7 @@
 	attribute_requirements = list(
 							PRUDENCE_ATTRIBUTE = 40
 							)
+	crit_multiplier = 1.6	//it DOES crit more often however
 	var/can_spin = TRUE
 	var/spinning = FALSE
 
@@ -94,6 +95,7 @@
 							FORTITUDE_ATTRIBUTE = 40
 							)
 	var/rage = FALSE
+	crit_multiplier = 2	//has a crit effect.
 
 /obj/item/ego_weapon/fury/attack(mob/living/target, mob/living/carbon/human/user)
 	var/living = FALSE
@@ -127,11 +129,29 @@
 	attribute_requirements = list(
 							FORTITUDE_ATTRIBUTE = 40
 							)
+	crit_multiplier = 3	//Give a better crit chance.
 
 //ATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATATAT
 /obj/item/ego_weapon/paw/melee_attack_chain(mob/user, atom/target, params)
 	..()
 	hitsound = "sound/weapons/punch[pick(1,2,3,4)].ogg"
+
+/obj/item/ego_weapon/paw/CritEffect(mob/living/target, mob/living/carbon/human/user)
+	for(var/turf/T in orange(1, user))
+		new /obj/effect/temp_visual/smash_effect(T)
+
+	for(var/mob/living/L in range(1, user))
+		var/aoe = force
+		var/userjust = (get_modified_attribute_level(user, JUSTICE_ATTRIBUTE))
+		var/justicemod = 1 + userjust/100
+		aoe*=force_multiplier
+		aoe*=justicemod
+		if(L == user || ishuman(L))
+			continue
+		L.apply_damage(aoe, RED_DAMAGE, null, L.run_armor_check(null, BLACK_DAMAGE), spread_damage = TRUE)
+
+
+
 
 /obj/item/ego_weapon/shield/daredevil
 	name = "life for a daredevil"
@@ -238,6 +258,7 @@
 	attribute_requirements = list(
 							FORTITUDE_ATTRIBUTE = 40
 							)
+
 /obj/item/ego_weapon/logging
 	name = "logging"
 	desc = "A versatile equipment made to cut down trees and people alike."
@@ -497,6 +518,7 @@
 	attribute_requirements = list(
 							FORTITUDE_ATTRIBUTE = 40
 							)
+	crit_multiplier = 3	//Knives get better crit.
 
 /obj/item/ego_weapon/mini/alleyway
 	name = "alleyway"
@@ -512,6 +534,7 @@
 	attribute_requirements = list(
 							PRUDENCE_ATTRIBUTE = 40
 							)
+	crit_multiplier = 3	//Knives get better crit.
 
 /obj/item/ego_weapon/shield/giant
 	name = "giant"
@@ -955,6 +978,7 @@
 	attribute_requirements = list(
 							FORTITUDE_ATTRIBUTE = 40
 							)
+	crit_multiplier = 2//Double crits
 
 /obj/item/ego_weapon/sanguine/attack(mob/living/target, mob/living/carbon/human/user)
 	if(!CanUseEgo(user))
@@ -2028,25 +2052,86 @@
 							FORTITUDE_ATTRIBUTE = 40
 							)
 
-/obj/item/ego_weapon/telepole//FIXME: actually make it do stuff
+/obj/item/ego_weapon/telepole
 	name = "telepole"
 	desc = "A hairy wooden longsword that's covered in barbed wire. It crackles with arcs of electricity."
-	special = "Activating the weapon in your hand allows you to dash, grazing nearby targets with BLACK damage."
+	charge_effect = "allows you to dash, grazing nearby targets with BLACK damage."
 	icon_state = "telepole"
-	lefthand_file = 'icons/mob/inhands/64x64_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/64x64_righthand.dmi'
 	force = 25
 	damtype = BLACK_DAMAGE
-	attack_verb_continuous = list("slashes", "stabs")
-	attack_verb_simple = list("slash", "stab")
+	attack_verb_continuous = list("slashes", "stabs", "sears", "zaps")
+	attack_verb_simple = list("slash", "stab", "sear", "zap")
+	hitsound = 'sound/abnormalities/alleywaywatchdog/telepole_1.ogg'
 	attribute_requirements = list(
 							FORTITUDE_ATTRIBUTE = 40
 							)
 	charge = TRUE
+	ability_type = ABILITY_UNIQUE
+	charge_cost = 4
+	var/leap_range = 5
+	var/leap_count = 0
+	var/list/hit_turfs = list()
 
-/obj/item/ego_weapon/telepole/ChargeAttack(mob/living/target, mob/living/user)
-	..()
-	//do the thing
+/obj/item/ego_weapon/telepole/afterattack(atom/target, mob/living/user, proximity_flag, clickparams)
+	if(!CanUseEgo(user))
+		return
+	if(!currently_charging)
+		return
+	var/dir_to_target = get_dir(get_turf(user), get_turf(target))
+	if(CheckPath(user, dir_to_target))
+		to_chat(user,span_notice("You need more room to do that!"))
+		return
+	hit_turfs = list()
+	leap_count = 0
+	Leap(user, dir_to_target, leap_range)
+	playsound(src, 'sound/abnormalities/alleywaywatchdog/telepole_2.ogg', 100, 1)
+	currently_charging = FALSE
+
+/obj/item/ego_weapon/telepole/proc/Leap(mob/living/user, dir = SOUTH, leap_range)//doesn't work
+	user.forceMove(get_step(get_turf(user), dir))
+	var/end_leap = FALSE
+	leap_count += 1
+	if(leap_count >= leap_range)
+		end_leap = TRUE
+	if(CheckPath(user, dir))
+		end_leap = TRUE
+	for(var/turf/T in orange(1, user))
+		hit_turfs |= T
+	if(end_leap)
+		playsound(src, 'sound/abnormalities/alleywaywatchdog/telepole_3.ogg', 100, 1)
+		for(var/turf/T in hit_turfs) // Once again mostly jacked from harvest, but modified to work with hit_turfs instead of an on-the-spot orange
+			new /obj/effect/temp_visual/smash_effect(T)
+			for(var/mob/living/L in T.contents)
+				var/aoe = force
+				var/userjust = (get_modified_attribute_level(user, JUSTICE_ATTRIBUTE))
+				var/justicemod = 1 + userjust/100
+				aoe*=justicemod
+				aoe*=force_multiplier
+				if(L == user)
+					continue
+				if(ishuman(L))
+					var/mob/living/carbon/human/H = L
+					if(!H.sanity_lost)
+						continue
+				L.apply_damage(aoe, BLACK_DAMAGE, null, L.run_armor_check(null, BLACK_DAMAGE), spread_damage = TRUE)
+				L.visible_message(span_danger("[user] sears [L] with the [src]!"))
+		return
+	addtimer(CALLBACK(src, PROC_REF(Leap), user, dir, leap_range), 0.1)
+
+/obj/item/ego_weapon/telepole/proc/CheckPath(mob/living/user, dir = SOUTH)
+	var/list/immediate_path = list()
+	immediate_path |= get_step(get_turf(user), dir)
+	immediate_path |= get_step(immediate_path[1], dir)
+	var/fail_charge = FALSE
+	for(var/turf/T in immediate_path)
+		if(T.density)
+			fail_charge = TRUE
+		for(var/obj/machinery/door/D in T.contents)
+			if(D.density)
+				fail_charge = TRUE
+		for(var/obj/structure/window/W in T.contents)
+			fail_charge = TRUE
+	return fail_charge
 
 /obj/item/ego_weapon/hexnail
 	name = "hex nail"

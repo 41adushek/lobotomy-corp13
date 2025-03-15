@@ -20,6 +20,8 @@
 	max_boxes = 16
 	work_damage_amount = 7
 	work_damage_type = RED_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/gluttony
+
 	ego_list = list(
 		/datum/ego_datum/weapon/syrinx,
 		/datum/ego_datum/weapon/trachea,
@@ -31,13 +33,13 @@
 	observation_prompt = "The baby never cries. <br>It kept that way forever. <br>\
 		As a lack of words doesn't necessarily mean a lack of emotions, a lack of crying doesn't mean lack of desire. <br>\
 		Since time unknown, the baby has had a mouth. <br>The baby who does not understand cries, expresses hunger, and causes pain for the others. <br>You..."
-	observation_choices = list("Call its name.", "Didn't call its name.")
-	correct_choices = list("Call its name.")
-	observation_success_message = "No one else knows the name of the fetus. <br>\
-		But you know. <br>You called its name. <br>\
-		The unstoppable desire shut its mouth for a while. <br>Even only for a short time, the desire silenced."
-	observation_fail_message = "The fetus is still crying. <br>\
-		You plugged your ears silently. <br>No sound is heard."
+	observation_choices = list(
+		"Call its name" = list(TRUE, "No one else knows the name of the fetus. <br>\
+			But you know. <br>You called its name. <br>\
+			The unstoppable desire shut its mouth for a while. <br>Even only for a short time, the desire silenced."),
+		"Didn't call its name" = list(FALSE, "The fetus is still crying. <br>\
+			You plugged your ears silently. <br>No sound is heard."),
+	)
 
 	var/mob/living/carbon/human/calling = null
 	var/criesleft

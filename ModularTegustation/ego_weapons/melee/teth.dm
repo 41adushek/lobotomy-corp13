@@ -34,6 +34,7 @@
 	attack_verb_continuous = list("pokes", "jabs", "tears", "lacerates", "gores")
 	attack_verb_simple = list("poke", "jab", "tear", "lacerate", "gore")
 	hitsound = 'sound/weapons/ego/spear1.ogg'
+	crit_multiplier = 1.5	//Slightly better crits because I feel bad about it
 
 /obj/item/ego_weapon/shield/lutemia
 	name = "dear lutemia"
@@ -42,6 +43,7 @@
 	force = 22
 	attack_speed = 1
 	damtype = WHITE_DAMAGE
+	crit_multiplier = 1.7
 	attack_verb_continuous = list("pokes", "jabs", "tears", "lacerates", "gores")
 	attack_verb_simple = list("poke", "jab", "tear", "lacerate", "gore")
 	hitsound = 'sound/weapons/ego/spear1.ogg'
@@ -109,7 +111,8 @@
 	desc = "The flesh cleanly cut by a sharp tool creates a grotesque pattern with the bloodstains on the suit."
 	special = "Upon throwing, this weapon returns to the user."
 	icon_state = "blossoms"
-	force = 19		//Slight damage boost due to it being from Cherry Tree
+	force = 17
+	crit_multiplier = 1.7
 	throwforce = 30
 	throw_speed = 1
 	throw_range = 7
@@ -132,6 +135,7 @@
 	icon_state = "cute"
 	force = 13
 	attack_speed = 0.5
+	crit_multiplier = 2
 	damtype = RED_DAMAGE
 	swingstyle = WEAPONSWING_LARGESWEEP
 	hitsound = 'sound/weapons/slashmiss.ogg'
@@ -142,6 +146,7 @@
 	icon_state = "trick"
 	force = 15
 	swingstyle = WEAPONSWING_LARGESWEEP
+	crit_multiplier = 2
 	throwforce = 35		//You can only hold 4 so go nuts.
 	throw_speed = 5
 	throw_range = 7
@@ -458,6 +463,7 @@
 	attack_verb_continuous = list("slices", "slashes", "stabs")
 	attack_verb_simple = list("slice", "slash", "stab")
 	hitsound = 'sound/weapons/fixer/generic/knife2.ogg'
+	crit_multiplier = 0	//This weapon doesn't have crits because of poise being better crits.
 	var/poise = 0
 
 /obj/item/ego_weapon/mini/fourleaf_clover/examine(mob/user)
@@ -530,7 +536,7 @@
 	name = "sanitizer"
 	desc = "It's very shocking."
 	icon_state = "sanitizer"
-	force = 35 //Still less DPS, replaces baseball bat?
+	force = 35
 	attack_speed = 1.6
 	damtype = BLACK_DAMAGE
 	knockback = KNOCKBACK_LIGHT
@@ -576,6 +582,17 @@
 	charge_speed_cap = 2
 	couch_cooldown_time = 3 SECONDS
 
+/obj/item/ego_weapon/kikimora
+	name = "kiki mora"
+	desc = "Many would speak her name."
+	icon_state = "kikimora"
+	force = 35
+	attack_speed = 1.6
+	damtype = RED_DAMAGE
+	attack_verb_continuous = list("beats", "smacks")
+	attack_verb_simple = list("beat", "smack")
+	hitsound = 'sound/weapons/fixer/generic/gen1.ogg'
+
 /obj/item/ego_weapon/denial
 	name = "denial"
 	desc = "Unregulated ingestion of Enkephalin may cause a wide range of unverified psychopathological symptoms."
@@ -586,3 +603,35 @@
 	attack_verb_continuous = list("smashes", "bludgeons", "crushes")
 	attack_verb_simple = list("smash", "bludgeon", "crush")
 	hitsound = 'sound/weapons/fixer/generic/club3.ogg'
+
+/obj/item/ego_weapon/rapunzel
+	name = "rapunzel"
+	desc = "Scissors long since lost to time. Packs a punch while being unwieldy."
+	icon_state = "rapunzel"
+	force = 32
+	stuntime = 5	//Mucho damage, bit of stun in exchange
+	damtype = BLACK_DAMAGE
+	attack_verb_continuous = list("pokes", "jabs", "tears", "lacerates", "gores")
+	attack_verb_simple = list("poke", "jab", "tear", "lacerate", "gore")
+	hitsound = 'sound/weapons/fixer/generic/knife2.ogg'
+
+/obj/item/ego_weapon/mini/clayman
+	name = "Creative Freedom"
+	desc = "Clay and flesh are both mediums for expression."
+	icon_state = "creativefreedom"
+	special = "This weapon slows after hit on windup."
+	force = 14
+	damtype = PALE_DAMAGE
+	hitsound = 'sound/weapons/bladeslice.ogg'
+
+/obj/item/ego_weapon/mini/clayman/attack(mob/living/target, mob/living/user)
+	if(!CanUseEgo(user))
+		return
+	..()
+	if(do_after(user, 7, src))
+		target.apply_status_effect(/datum/status_effect/qliphothoverload)
+	else
+		to_chat(user, "<span class= 'spider'><b>Your attack was interrupted!</b></span>")
+		return
+
+

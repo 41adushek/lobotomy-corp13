@@ -40,6 +40,7 @@
 	)
 	work_damage_amount = 12
 	work_damage_type = WHITE_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/gluttony
 	good_hater = TRUE
 	death_message = "blows up like a balloon!"
 	speak_chance = 2
@@ -66,11 +67,11 @@
 		When I first met this thing, I started to understand how those people feel. <br>\
 		Right now, during my attachment work, it started its usual clown performance. <br>\
 		Things are looking good so far. <br>Out of its pocket, the clown pulls out..."
-	observation_choices = list("It's just a tool" ,"Run")
-	correct_choices = list("Run")
-	observation_success_message = "I bolted out of containment unit as fast as I could. <br>\
-		I could hear giggling as I left. <br>But that was more than just a cruel prank."
-	observation_fail_message = "I thought it was a tool. <br>Just for that moment."
+	observation_choices = list(
+		"Run" = list(TRUE, "I bolted out of containment unit as fast as I could. <br>\
+		I could hear giggling as I left. <br>But that was more than just a cruel prank."),
+		"It's just a tool" = list(FALSE, "I thought it was a tool. <br>Just for that moment."),
+	)
 
 	del_on_death = FALSE //for explosions
 	var/finishing = FALSE
@@ -109,12 +110,12 @@
 			return FALSE
 	return ..()
 
-/mob/living/simple_animal/hostile/abnormality/clown/AttackingTarget()
+/mob/living/simple_animal/hostile/abnormality/clown/AttackingTarget(atom/attacked_target)
 	. = ..()
 	if(.)
-		if(!ishuman(target))
+		if(!ishuman(attacked_target))
 			return
-		var/mob/living/carbon/human/TH = target
+		var/mob/living/carbon/human/TH = attacked_target
 		if(TH.health < 0)
 			finishing = TRUE
 			TH.Stun(4 SECONDS)
@@ -124,7 +125,7 @@
 					finishing = FALSE
 					return
 				TH.attack_animal(src)
-				for(var/mob/living/carbon/human/H in view(7, get_turf(src)))
+				for(var/mob/living/carbon/human/H in ohearers(7, get_turf(src)))
 					H.deal_damage(5, WHITE_DAMAGE)
 				SLEEP_CHECK_DEATH(2)
 			if(!targets_from.Adjacent(TH) || QDELETED(TH))
@@ -132,7 +133,7 @@
 				return
 			playsound(get_turf(src), 'sound/abnormalities/clownsmiling/final_stab.ogg', 50, 1)
 			TH.gib()
-			for(var/mob/living/carbon/human/H in view(7, get_turf(src)))
+			for(var/mob/living/carbon/human/H in ohearers(7, get_turf(src)))
 				H.deal_damage(30, WHITE_DAMAGE)
 
 /mob/living/simple_animal/hostile/abnormality/clown/MoveToTarget(list/possible_targets)
@@ -188,7 +189,7 @@
 	for(var/mob/living/L in view(5, src))
 		if(!faction_check_mob(L))
 			L.deal_damage(25, RED_DAMAGE)
-	new /obj/effect/particle_effect/foam in get_turf(src)
+	new /obj/effect/particle_effect/foam(get_turf(src))
 	gib()
 
 //Clown picture-related code

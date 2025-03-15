@@ -16,6 +16,7 @@
 	)
 	work_damage_amount = 8
 	work_damage_type = BLACK_DAMAGE
+	chem_type = /datum/reagent/abnormality/sin/lust
 	max_boxes = 16 // Accurate to base game
 	melee_damage_type = WHITE_DAMAGE
 	melee_damage_lower = 1
@@ -34,14 +35,18 @@
 	observation_prompt = "This place is so gloomy, everyone always seems so sad and they don't smile. <br>\
 		It's lonely to be sad, so, this little lady has been secretly giving them all presents filled with friends! <br>\
 		Did they like the surprise?"
-	observation_choices = list("Tell the truth", "Lie and say they did")
-	correct_choices = list("Tell the truth")
-	observation_success_message = "Oh, that's sad... <br>Even if they're my friends, that doesn't mean they're your friends as well. <br>\
-		I won't give you a present, but, could you stay and play with me some more today?"
-	observation_fail_message = "I'm glad! <br>I wish I could have seen their faces, I bet they were so surprised! <br>\
-		You look lonely too, I hope my present will make you laugh as well!"
+	observation_choices = list(
+		"Tell the truth" = list(TRUE, "Oh, that's sad... <br>Even if they're my friends, that doesn't mean they're your friends as well. <br>\
+			I won't give you a present, but, could you stay and play with me some more today?"),
+		"Lie and say they did" = list(FALSE, "I'm glad! <br>I wish I could have seen their faces, I bet they were so surprised! <br>\
+			You look lonely too, I hope my present will make you laugh as well!"),
+	)
 
 	attack_action_types = list(/datum/action/cooldown/laetitia_gift, /datum/action/cooldown/laetitia_summon)
+	var/breaching = FALSE
+	var/summon_cooldown
+	var/summon_cooldown_time = 60 SECONDS
+	var/summon_count = 0
 
 /datum/action/cooldown/laetitia_summon
 	name = "Call for Friends"
@@ -49,7 +54,7 @@
 	button_icon_state = "prank_gift"
 	check_flags = AB_CHECK_CONSCIOUS
 	transparent_when_unavailable = TRUE
-	cooldown_time = 40 SECONDS
+	cooldown_time = 60 SECONDS
 	var/delete_timer
 	var/delete_cooldown = 30 SECONDS
 	var/mob/living/simple_animal/hostile/gift/G1
@@ -139,6 +144,12 @@
 		qdel(src)
 	opening = FALSE
 
+/mob/living/simple_animal/hostile/abnormality/laetitia/Life()
+	. = ..()
+	if(!breaching)
+		return
+	if((summon_cooldown < world.time) && !(status_flags & GODMODE))
+		SummonAdds()
 
 /mob/living/simple_animal/hostile/abnormality/laetitia/NeutralEffect(mob/living/carbon/human/user, work_type, pe)
 	. = ..()
@@ -168,6 +179,19 @@
 		P.TriggerPrank()
 	return
 
+/mob/living/simple_animal/hostile/abnormality/laetitia/BreachEffect(mob/living/carbon/human/user, breach_type)
+	if(breach_type == BREACH_MINING)
+		breaching = TRUE
+	return ..()
+
+/mob/living/simple_animal/hostile/abnormality/laetitia/proc/SummonAdds()//Mining breach summon
+	summon_cooldown = world.time + summon_cooldown_time
+	if(summon_count > 9)//this list is not subtracted when minions are killed. Limited to 10 per breach
+		return
+	var/turf/target_turf = get_turf(src)
+	new /mob/living/simple_animal/hostile/gift(target_turf)
+	summon_count += 1
+
 //Her friend
 /mob/living/simple_animal/hostile/gift
 	name = "Little Witch's Friend"
@@ -194,7 +218,7 @@
 	playsound(get_turf(src), 'sound/abnormalities/laetitia/spider_born.ogg', 50, 1)
 
 /mob/living/simple_animal/hostile/gift/AttackingTarget(atom/attacked_target)
-	if (istype(target, /mob/living/simple_animal/hostile/abnormality/laetitia))
+	if (istype(attacked_target, /mob/living/simple_animal/hostile/abnormality/laetitia))
 		manual_emote("pats Laetitia")
 		return FALSE
 	return ..()
@@ -203,7 +227,7 @@
 	density = FALSE
 	animate(src, alpha = 0, time = 10 SECONDS)
 	QDEL_IN(src, 10 SECONDS)
-	..()
+	return ..()
 
 //Given Prank Gift
 //Explodes after 3 to 4 minutes
